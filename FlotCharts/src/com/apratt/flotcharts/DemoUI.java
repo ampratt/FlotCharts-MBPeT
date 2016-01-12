@@ -17,9 +17,15 @@ import com.vaadin.ui.TextField;
 import com.vaadin.ui.UI;
 import com.vaadin.ui.VerticalLayout;
 
+import elemental.js.json.JsJsonFactory;
+import elemental.json.JsonArray;
+import elemental.json.JsonFactory;
+import elemental.json.JsonString;
+import elemental.json.impl.JreJsonFactory;
+
 @SuppressWarnings("serial")
 @Theme("flotcharts")
-@Title("FlotCharts") 
+@Title("FlotCharts git") 
 public class DemoUI extends UI {  
 
 	final VerticalLayout right = new VerticalLayout();
@@ -31,7 +37,8 @@ public class DemoUI extends UI {
 	private FlotChart updatesChart;
 	int x = 0;	//testing updates
 	int prevY = 0;
-	
+	JsonFactory factory = new JreJsonFactory();
+
 	@WebServlet(value = "/*", asyncSupported = true)
 	@VaadinServletConfiguration(productionMode = false, ui = DemoUI.class, widgetset = "com.apratt.flotcharts.widgetset.FlotchartsWidgetset")
 	public static class Servlet extends VaadinServlet {
@@ -86,7 +93,7 @@ public class DemoUI extends UI {
 				right.addComponent(updatesChart);
 
 				// update label
-				currentData.setValue("Data from chart State:\n" + updatesChart.getData().toString());	//current.setValue("Graph data is: " + flot.getData());				
+				currentData.setValue("Data from chart State:\n" + updatesChart.getData().toJson());	//current.setValue("Graph data is: " + flot.getData());				
 			}
 		}); 
 		right.addComponent(button);
@@ -99,7 +106,7 @@ public class DemoUI extends UI {
 				updatesChart.getCurrentData();
 
 				// update label
-				currentData.setValue("Data from chart State:\n" + updatesChart.getData());	//current.setValue("Graph data is: " + flot.getData());
+				currentData.setValue("Data from chart State:\n" + updatesChart.getData().toJson());	//current.setValue("Graph data is: " + flot.getData());
 			}
 		});
 //		right.addComponent(dataButton);
@@ -119,7 +126,7 @@ public class DemoUI extends UI {
 				updatesChart.getCurrentData();
 				
 				// update label
-				currentData.setValue("Data from chart State:\n" + updatesChart.getData());	//current.setValue("Graph data is: " + flot.getData());
+				currentData.setValue("Data from chart State:\n" + updatesChart.getData().toJson());	//current.setValue("Graph data is: " + flot.getData());
 			}
 		});
 		right.addComponent(updateButton);
@@ -141,6 +148,7 @@ public class DemoUI extends UI {
 
 			updatesChart.addNewData(x, y);	// update the server side data
 			updatesChart.update(x, y);			// update the js code to effect the chart 
+//			System.out.println(updatesChart.getData().toJson());
 	//		data.push([x, y]);
 			prevY = y;
 //			prevX = x;
@@ -154,6 +162,22 @@ public class DemoUI extends UI {
 	public VerticalLayout leftLayout() {
 		left.setMargin(true);
 		left.setSpacing(true);
+		
+		FlotChart flot = new FlotChart();
+		flot.setWidth("300px");
+		flot.setHeight("300px");
+		String data =
+		"[ { \"data\":" +
+		"[" +
+		"[0, 5]," +
+		"[2, 7]," +
+		"[4, 8]," +
+		"[10, 5]" +
+		"] }" +
+		"]";
+		flot.setData(data);
+		left.addComponent(flot);
+		
 		
 		// FLOT CHART
 
@@ -189,7 +213,7 @@ public class DemoUI extends UI {
 				left.addComponent(chart);
 //						layout.addComponent(new Label("this is the chart options JSON: " + chart.getOptions().toString()));
 				// update label
-				currentData.setValue("Data from chart State:\n" + chart.getData().toString());	//current.setValue("Graph data is: " + flot.getData());				
+				currentData.setValue("Data from chart State:\n" + chart.getData().toJson());	//toString());	//current.setValue("Graph data is: " + flot.getData());				
 			}
 		});
 		left.addComponent(button);
@@ -202,7 +226,10 @@ public class DemoUI extends UI {
 //						layout.addComponent(new Label("this is the chart options JSON: " + chart.getOptions().toString()));
 				// update label
 //						currentData.setValue(formatDataFromGraph("Data from chart State: " + chart.getData().toString()));	//current.setValue("Graph data is: " + flot.getData());
-				currentData.setValue("Data from chart State:\n" + chart.getData().toString());	//current.setValue("Graph data is: " + flot.getData());
+				
+//				String jsString = chart.getData().toJson();	//  (chart.getData());
+//				System.out.println("REGULAR STRING FROM JSSTRING: " + jsString);
+				currentData.setValue("Data from chart State:\n" + chart.getData().toJson());	//chart.getData().toString());	//current.setValue("Graph data is: " + flot.getData());
 //						Notification.show(formatDataFromGraph("this is the data now in the chart: " + chart.getData().toString()));
 			}
 		});
@@ -230,20 +257,20 @@ public class DemoUI extends UI {
 		String data1 = data;	//lines:{show:true, fill:true}, points:{show:true}, 	//formatDataForGraph("[[0,0], [10,30], [20,50]]");
 //		String data2 = data + ", label: ramp function, lines:{show:true, fill:false}, points:{show:true}, clickable:false, hoverable:true, editable:true";
 		
-		updatesChart.setData("[{ data: " + data1 + " }]");	
+		updatesChart.setData("[{ \"data\": " + data1 + " }]");	
 //		updatesChart.setData("[{ data: " + data1 + "}, { data: " + data2 + " }]");	
 
 		// options
 		String options =
 				"{" + 
-					"series: { label: server data, lines: {show:true, fill:true}, points: {show: true} }," +
+					"\"series\": { \"label\": \"server data\", \"lines\": {\"show\":\"true\", \"fill\":\"true\"}, \"points\": {\"show\": \"true\"} }," +
 //					"crosshair: {mode: x}, " +
-					"legend: { position: nw }, " +
-					"xaxes: [{ axisLabel: x label, }], " +
-					"yaxes: [{ position: left, axisLabel: y label, tickFormatter: 'ms'}], " +
-					"grid: { " +
-						"clickable: true," +
-						"hoverable: true," +
+					"\"legend\": { \"position\": \"nw\" }, " +
+					"\"xaxes\": [{ \"axisLabel\": \"x label\", }], " +
+					"\"yaxes\": [{ \"position\": \"left\", \"axisLabel\": \"y label\", \"tickFormatter\": \"ms\"}], " +
+					"\"grid\": { " +
+						"\"clickable\": \"true\"," +
+						"\"hoverable\": \"true\"," +
 					"}" +
 				"}";
 		updatesChart.setOptions(options);
@@ -257,26 +284,31 @@ public class DemoUI extends UI {
 		chart.setWidth("95%");
 		chart.setHeight("300px");
 		
+		JsonFactory factory = new JreJsonFactory();
+
+		JsonString jsString = factory.create(data);
+		System.out.println("JSSTRING: " + jsString.asString());
+		
 //		String data1 = formatDataForGraph(data);		//"[{ data:" + data + "\", lines:{show:true}\", points:{show:true} }]";
 		String d = "[[0,0],[5,5],[10,10],[20,20],[25,25],[30,40],[32,44],[37,50],[40,100],[45,110],[50,110],[55,100],[60,50],[70,20],[80,10]]";
-		String data1 = d + ", label: server data, lines: {show:true, fill:true}, points:{show:true}, clickable:true, hoverable:true, editable:false";	//lines:{show:true, fill:true}, points:{show:true}, 	//formatDataForGraph("[[0,0], [10,30], [20,50]]");
-		String data2 = data + ", label: ramp function, lines:{show:true, fill:false}, points:{show:true}, clickable:false, hoverable:true, editable:true";
+		String data1 = d + ", \"label\": \"server data\", \"lines\": {\"show\":\"true\", \"fill\":\"true\"}, \"points\":{\"show\":\"true\"}, \"clickable\":\"true\", \"hoverable\":\"true\", \"editable\":\"false\"";	//lines:{show:true, fill:true}, points:{show:true}, 	//formatDataForGraph("[[0,0], [10,30], [20,50]]");
+		String data2 = data + ", \"label\": \"ramp function\", \"lines\":{\"show\":\"true\", \"fill\":\"false\"}, \"points\":{\"show\":\"true\"}, \"clickable\":\"false\", \"hoverable\":\"true\", \"editable\":\"true\"";
 		
-//		chart.setData("[{ data: " + data1 + " }]");	//(formatDataForGraph(data));
-		chart.setData("[{ data: " + data1 + "}, { data: " + data2 + " }]");	//("[{ data:[[0,0], [10,30], [20,50]], lines:{show:true}, points:{show:true}, hoverable:true, clickable:true }]");	//(formatDataForGraph(data));
+//		chart.setData("[{ \"data\": " + data1 + " }]");	//(formatDataForGraph(data));
+		chart.setData("[{ \"data\": " + data1 + "}, { \"data\": " + data2 + " }]");	//("[{ data:[[0,0], [10,30], [20,50]], lines:{show:true}, points:{show:true}, hoverable:true, clickable:true }]");	//(formatDataForGraph(data));
 		// options
 		String options =
 				"{" + 
 					//"series: { lines: {show: true}, points: {show: true} }" +
 //					"crosshair: {mode: x}, " +
-					"legend: { position: nw }, " +
-					"xaxes: [{ axisLabel: x label, }], " +
-					"yaxes: [{ position: left, axisLabel: y label, tickFormatter: 'ms'}], " +
-					"grid: { " +
-						"aboveData: false," +
-						"clickable: true," +
-						"hoverable: true," +
-						"editable:true," +
+					"\"legend\": { \"position\": \"nw\" }, " +
+					"\"xaxes\": [{ \"axisLabel\": \"x label\", }], " +
+					"\"yaxes\": [{ \"position\": \"left\", \"axisLabel\": \"y label\", \"tickFormatter\": \"ms\"}], " +	//'ms'}], " +
+					"\"grid\": { " +
+						"\"aboveData\": \"false\"," +
+						"\"clickable\": \"true\"," +
+						"\"hoverable\": \"true\"," +
+						"\"editable\":\"true\"," +
 //						"backgroundColor:{" +
 //							"colors:[ \"#fef\", \"#eee\" ]" +
 //						"}" +

@@ -113,6 +113,8 @@ window.com_apratt_flotcharts_FlotChart = function() {
 		} while (i<10);
  */
 	}
+	
+	
 //	this.update = function() {
 //		data.push([10,15], [20,20], [30,30]);
 //		p.setData([data]);
